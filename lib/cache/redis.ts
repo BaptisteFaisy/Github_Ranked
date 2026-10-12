@@ -12,12 +12,44 @@ import { Redis } from '@upstash/redis';
 let redisClient: Redis | null = null;
 
 /**
+ * Resolved Redis connection details.
+ */
+interface RedisEnv {
+  url: string;
+  token: string;
+}
+
+/**
+ * Resolve Redis connection details from environment.
+ *
+ * Supports both naming schemes (complete pairs only, no mixing):
+ * - `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` (Upstash console
+ *   convention, takes precedence)
+ * - `KV_REST_API_URL` / `KV_REST_API_TOKEN` (Vercel Marketplace integration)
+ *
+ * @returns Connection details, or null when no complete pair is set
+ */
+function resolveRedisEnv(): RedisEnv | null {
+  const directUrl = process.env.UPSTASH_REDIS_REST_URL;
+  const directToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (directUrl && directToken) {
+    return { url: directUrl, token: directToken };
+  }
+
+  const kvUrl = process.env.KV_REST_API_URL;
+  const kvToken = process.env.KV_REST_API_TOKEN;
+  if (kvUrl && kvToken) {
+    return { url: kvUrl, token: kvToken };
+  }
+
+  return null;
+}
+
+/**
  * Check if Redis is configured in environment.
  */
 export function isRedisConfigured(): boolean {
-  return !!(
-    process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-  );
+  return resolveRedisEnv() !== null;
 }
 
 /**
@@ -27,14 +59,15 @@ export function isRedisConfigured(): boolean {
  * @returns Redis client or null
  */
 export function getRedisClient(): Redis | null {
-  if (!isRedisConfigured()) {
+  const env = resolveRedisEnv();
+  if (!env) {
     return null;
   }
 
   if (!redisClient) {
     redisClient = new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL!,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+      url: env.url,
+      token: env.token,
     });
   }
 

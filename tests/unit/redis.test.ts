@@ -76,6 +76,24 @@ describe('Redis Client', () => {
     it('should return false when both are missing', () => {
       delete process.env.UPSTASH_REDIS_REST_URL;
       delete process.env.UPSTASH_REDIS_REST_TOKEN;
+      delete process.env.KV_REST_API_URL;
+      delete process.env.KV_REST_API_TOKEN;
+      expect(isRedisConfigured()).toBe(false);
+    });
+
+    it('should return true when only Vercel KV_* vars are set', () => {
+      delete process.env.UPSTASH_REDIS_REST_URL;
+      delete process.env.UPSTASH_REDIS_REST_TOKEN;
+      process.env.KV_REST_API_URL = 'https://kv.upstash.io';
+      process.env.KV_REST_API_TOKEN = 'kv-token';
+      expect(isRedisConfigured()).toBe(true);
+    });
+
+    it('should return false when only a mixed incomplete pair is set', () => {
+      delete process.env.UPSTASH_REDIS_REST_TOKEN;
+      delete process.env.KV_REST_API_URL;
+      delete process.env.KV_REST_API_TOKEN;
+      process.env.UPSTASH_REDIS_REST_URL = 'https://redis.upstash.io';
       expect(isRedisConfigured()).toBe(false);
     });
   });
