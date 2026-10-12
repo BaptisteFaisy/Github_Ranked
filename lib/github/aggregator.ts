@@ -285,8 +285,12 @@ export async function aggregateAllTimeStats(
   username: string,
   token?: string
 ): Promise<AggregatedStats> {
-  const years = await fetchContributionYears(username, token);
-  const { totalStars, totalFollowers } = await fetchUserMeta(username, token);
+  // Independent queries: run in parallel to cut cold-response latency
+  // (badge embeds must answer fast or GitHub's image proxy times out).
+  const [years, { totalStars, totalFollowers }] = await Promise.all([
+    fetchContributionYears(username, token),
+    fetchUserMeta(username, token),
+  ]);
   const currentYear = getCurrentYear();
 
   if (years.length === 0) {
@@ -347,8 +351,11 @@ export async function aggregateAllTimeStatsExtended(
   username: string,
   token?: string
 ): Promise<ExtendedAggregatedStats> {
-  const years = await fetchContributionYears(username, token);
-  const { totalStars, totalFollowers } = await fetchUserMeta(username, token);
+  // Independent queries: run in parallel to cut cold-response latency.
+  const [years, { totalStars, totalFollowers }] = await Promise.all([
+    fetchContributionYears(username, token),
+    fetchUserMeta(username, token),
+  ]);
   const currentYear = getCurrentYear();
 
   if (years.length === 0) {

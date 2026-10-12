@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import type { ExtendedAggregatedStats } from '@/lib/github/types';
 import type { RankResult } from '@/lib/ranking/types';
+import { calculateTopPercent, formatPercent } from '@/lib/ranking/engine';
 import {
   METRIC_WEIGHTS,
   MAX_STARS_CAP,
@@ -27,7 +28,7 @@ export default function DashboardClient({
   const [showRawStats, setShowRawStats] = useState(false);
   const tierColors = TIER_COLORS[rank.tier];
   const tierLabel = rank.division ? `${rank.tier} ${rank.division}` : rank.tier;
-  const topPercent = Math.max(0, 100 - rank.percentile);
+  const topPercent = calculateTopPercent(rank.zScore);
 
   // Calculate GP breakdown for display
   const gpBreakdown = {
@@ -79,7 +80,8 @@ export default function DashboardClient({
           {tierLabel} - {rank.elo.toLocaleString()} Rating
         </p>
         <p className={styles.percentile}>
-          Percentile {rank.percentile.toFixed(1)} (Top {topPercent.toFixed(1)}%)
+          Percentile {formatPercent(rank.percentile)} (Top{' '}
+          {formatPercent(topPercent)}%)
         </p>
       </section>
 

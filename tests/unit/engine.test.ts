@@ -11,6 +11,8 @@ import {
   getDivision,
   calculateGP,
   calculatePercentile,
+  calculateTopPercent,
+  formatPercent,
   calculateRank,
 } from '@/lib/ranking/engine';
 import type { AggregatedStats } from '@/lib/github/types';
@@ -1070,10 +1072,12 @@ describe('Ranking Engine - calculatePercentile', () => {
     expect(p3).toBeLessThan(99.9);
   });
 
-  it('should round to 1 decimal place', () => {
+  it('should preserve full precision (no rounding)', () => {
     const percentile = calculatePercentile(0.674); // Should be ~75%
-    const decimalPlaces = (percentile.toString().split('.')[1] || '').length;
-    expect(decimalPlaces).toBeLessThanOrEqual(1);
+    expect(percentile).toBeCloseTo(75, 0);
+    // Must NOT be rounded to 1 decimal: full float precision retained
+    // so the UI can display 0.001% and beyond as the rating grows.
+    expect(percentile).not.toBe(Math.round(percentile * 10) / 10);
   });
 
   it('should handle Z-score for Gold IV player (median)', () => {
@@ -1087,6 +1091,72 @@ describe('Ranking Engine - calculatePercentile', () => {
     const percentile = calculatePercentile(4.5);
     expect(percentile).toBeGreaterThanOrEqual(99.9);
     expect(percentile).toBeLessThanOrEqual(100);
+  });
+});
+
+describe('Ranking Engine - calculateTopPercent', () => {
+  it('should return ~50% for Z-score of 0 (mean)', () => {
+    expect(calculateTopPercent(0)).toBeCloseTo(50, 5);
+  });
+
+  it('should return ~2.275% for Z-score of 2', () => {
+    expect(calculateTopPercent(2)).toBeCloseTo(2.275, 3);
+  });
+
+  it('should return ~97.725% for Z-score of -2', () => {
+    expect(calculateTopPercent(-2)).toBeCloseTo(97.725, 3);
+  });
+
+  it('should stay strictly positive for very high Z-scores (no cap)', () => {
+    const top = calculateTopPercent(5);
+    expect(top).toBeGreaterThan(0);
+    expect(top).toBeLessThan(0.001);
+  });
+
+  it('should complement percentile to 100', () => {
+    for (const z of [-3, -1, 0, 0.674, 1.5, 2.5, 4]) {
+      expect(calculatePercentile(z) + calculateTopPercent(z)).toBeCloseTo(
+        100,
+        8
+      );
+    }
+  });
+
+  it('should be monotonically decreasing', () => {
+    expect(calculateTopPercent(2)).toBeLessThan(calculateTopPercent(1));
+    expect(calculateTopPercent(1)).toBeLessThan(calculateTopPercent(0));
+  });
+
+  it('should clamp extreme values to [0, 100]', () => {
+    expect(calculateTopPercent(10)).toBeGreaterThanOrEqual(0);
+    expect(calculateTopPercent(-10)).toBeLessThanOrEqual(100);
+  });
+});
+
+describe('Ranking Engine - formatPercent', () => {
+  it('should format with 3 decimals by default (0.001% precision)', () => {
+    expect(formatPercent(99.4)).toBe('99.400');
+    expect(formatPercent(0.6)).toBe('0.600');
+    expect(formatPercent(50)).toBe('50.000');
+  });
+
+  it('should extend decimals instead of sticking at 0.000%', () => {
+    expect(formatPercent(0.0004)).toBe('0.0004');
+    expect(formatPercent(0.00004)).toBe('0.00004');
+  });
+
+  it('should extend decimals instead of sticking at 100.000', () => {
+    expect(formatPercent(99.99997)).toBe('99.99997');
+  });
+
+  it('should keep exact boundaries', () => {
+    expect(formatPercent(0)).toBe('0.000');
+    expect(formatPercent(100)).toBe('100.000');
+  });
+
+  it('should clamp out-of-range values', () => {
+    expect(formatPercent(-0.5)).toBe('0.000');
+    expect(formatPercent(100.2)).toBe('100.000');
   });
 });
 

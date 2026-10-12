@@ -86,7 +86,7 @@ export interface RankResult {
   /** Git Points within current division (0 - 99) */
   gp: number;
 
-  /** Percentile ranking (0 - 100) */
+  /** Percentile ranking (0 - 100), unrounded full precision */
   percentile: number;
 
   /** Weighted Performance Index - raw score before transformation */

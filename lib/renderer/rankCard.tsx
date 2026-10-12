@@ -3,6 +3,7 @@ import React from 'react';
 import type { AggregatedStats } from '../github/types';
 import type { RankResult } from '../ranking/types';
 import { TIER_COLORS } from '../ranking/constants';
+import { calculateTopPercent, formatPercent } from '../ranking/engine';
 import { RankIcon } from './components/RankIcon';
 import { ProgressBar } from './components/ProgressBar';
 import { getTheme, type ThemeName } from './themes';
@@ -33,6 +34,7 @@ export function RankCard({
   const tierColors = TIER_COLORS[rank.tier];
   const tierLabel = rank.division ? `${rank.tier} ${rank.division}` : rank.tier;
   const eloLabel = new Intl.NumberFormat('en-US').format(rank.elo);
+  const topPercentLabel = `TOP ${formatPercent(calculateTopPercent(rank.zScore))}%`;
 
   // Determine season label
   const currentYear = new Date().getUTCFullYear();
@@ -100,8 +102,9 @@ export function RankCard({
         <div
           style={{
             display: 'flex',
-            alignItems: 'center',
-            gap: 6,
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+            gap: 2,
           }}
         >
           <span
@@ -113,6 +116,16 @@ export function RankCard({
             }}
           >
             {`@${username}`}
+          </span>
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: tierColors.accent,
+              display: 'flex',
+            }}
+          >
+            {topPercentLabel}
           </span>
         </div>
       </div>

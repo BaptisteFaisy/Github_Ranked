@@ -215,8 +215,12 @@ function erf(x: number): number {
  * of the standard normal distribution. Returns a value from 0 to 100 representing
  * the percentage of developers with a lower score.
  *
+ * Full float precision is preserved (no rounding) so the UI can display the
+ * percentile down to 0.001% and beyond as the rating grows. Use {@link formatPercent}
+ * for display.
+ *
  * @param zScore - Z-score (standard deviations from mean)
- * @returns Percentile (0-100)
+ * @returns Percentile (0-100), unrounded
  *
  * @example
  * ```typescript
@@ -237,11 +241,81 @@ export function calculatePercentile(zScore: number): number {
   // Convert to percentile (0-100)
   const percentile = cdf * 100;
 
-  // Clamp to valid range (handle floating point edge cases)
-  const clampedPercentile = Math.max(0, Math.min(100, percentile));
+  // Clamp to valid range (handle floating point edge cases only)
+  return Math.max(0, Math.min(100, percentile));
+}
 
-  // Round to 1 decimal place for cleaner UI display
-  return Math.round(clampedPercentile * 10) / 10;
+/**
+ * Calculate "Top %" from Z-score
+ *
+ * Returns the share of developers ranked ABOVE this score (the upper tail of
+ * the standard normal distribution). Computed directly from the complementary
+ * CDF rather than as `100 - percentile` so tiny values (Top 0.001% and below)
+ * keep full precision instead of degrading through floating-point cancellation.
+ *
+ * @param zScore - Z-score (standard deviations from mean)
+ * @returns Top percentage (0-100), unrounded
+ *
+ * @example
+ * ```typescript
+ * const top = calculateTopPercent(2); // ~2.275 (top 2.275%)
+ * ```
+ */
+export function calculateTopPercent(zScore: number): number {
+  // Upper tail: 1 - Φ(z) = 0.5 * (1 - erf(z / √2))
+  const upperTail = 0.5 * (1 - erf(zScore / Math.sqrt(2)));
+
+  // Convert to percentage (0-100)
+  const topPercent = upperTail * 100;
+
+  // Clamp to valid range (handle floating point edge cases only)
+  return Math.max(0, Math.min(100, topPercent));
+}
+
+/** Minimum decimals shown for a percentile / Top % value (0.001% precision). */
+const DISPLAY_MIN_DECIMALS = 3;
+
+/**
+ * Maximum decimals used when extending precision near a boundary.
+ * (Past ~5 decimals the erf approximation error dominates, so 6 is a hard cap.)
+ */
+const DISPLAY_MAX_DECIMALS = 6;
+
+/**
+ * Format a percentile / Top % value for display.
+ *
+ * Always shows at least 3 decimals (0.001% precision). When the value is
+ * strictly inside (0, 100) but would round to a boundary ("0.000" or "100.000"),
+ * decimals are extended up to 6 so the number keeps moving as the rating grows
+ * instead of looking stuck — effectively no display cap.
+ *
+ * @param value - Percentile or Top % value (0-100)
+ * @returns Formatted number without the % sign (e.g. "99.400", "0.00004")
+ *
+ * @example
+ * ```typescript
+ * formatPercent(0.6); // "0.600"
+ * formatPercent(0.00004); // "0.00004" (extended, not stuck at "0.000")
+ * ```
+ */
+export function formatPercent(value: number): string {
+  const clamped = Math.max(0, Math.min(100, value));
+
+  for (
+    let decimals = DISPLAY_MIN_DECIMALS;
+    decimals <= DISPLAY_MAX_DECIMALS;
+    decimals++
+  ) {
+    const text = clamped.toFixed(decimals);
+    const rounded = parseFloat(text);
+    const stuckAtZero = rounded === 0 && clamped !== 0;
+    const stuckAtHundred = rounded === 100 && clamped !== 100;
+    if (!stuckAtZero && !stuckAtHundred) {
+      return text;
+    }
+  }
+
+  return clamped.toFixed(DISPLAY_MAX_DECIMALS);
 }
 
 /**
@@ -275,7 +349,7 @@ export function calculatePercentile(zScore: number): number {
  * //   division: 'II',
  * //   elo: 1350,
  * //   gp: 50,
- * //   percentile: 65.5,
+ * //   percentile: 91.772..., // unrounded full precision
  * //   wpi: 5550,
  * //   zScore: 0.375
  * // }
