@@ -265,17 +265,17 @@ describe('Phase 1: Core Infrastructure', () => {
     it('should have tier thresholds for all 10 tiers', () => {
       expect(Object.keys(TIER_THRESHOLDS)).toHaveLength(10);
 
-      expect(TIER_THRESHOLDS.Iron).toEqual({ min: 0, max: 600 });
-      expect(TIER_THRESHOLDS.Bronze).toEqual({ min: 600, max: 900 });
-      expect(TIER_THRESHOLDS.Silver).toEqual({ min: 900, max: 1200 });
-      expect(TIER_THRESHOLDS.Gold).toEqual({ min: 1200, max: 1500 });
-      expect(TIER_THRESHOLDS.Platinum).toEqual({ min: 1500, max: 1700 });
-      expect(TIER_THRESHOLDS.Emerald).toEqual({ min: 1700, max: 2000 });
-      expect(TIER_THRESHOLDS.Diamond).toEqual({ min: 2000, max: 2400 });
-      expect(TIER_THRESHOLDS.Master).toEqual({ min: 2400, max: 2600 });
-      expect(TIER_THRESHOLDS.Grandmaster).toEqual({ min: 2600, max: 3000 });
+      expect(TIER_THRESHOLDS.Iron).toEqual({ min: 0, max: 931 });
+      expect(TIER_THRESHOLDS.Bronze).toEqual({ min: 931, max: 1200 });
+      expect(TIER_THRESHOLDS.Silver).toEqual({ min: 1200, max: 1470 });
+      expect(TIER_THRESHOLDS.Gold).toEqual({ min: 1470, max: 1713 });
+      expect(TIER_THRESHOLDS.Platinum).toEqual({ min: 1713, max: 2131 });
+      expect(TIER_THRESHOLDS.Emerald).toEqual({ min: 2131, max: 2437 });
+      expect(TIER_THRESHOLDS.Diamond).toEqual({ min: 2437, max: 2688 });
+      expect(TIER_THRESHOLDS.Master).toEqual({ min: 2688, max: 2906 });
+      expect(TIER_THRESHOLDS.Grandmaster).toEqual({ min: 2906, max: 3102 });
       expect(TIER_THRESHOLDS.Challenger).toEqual({
-        min: 3000,
+        min: 3102,
         max: Infinity,
       });
     });

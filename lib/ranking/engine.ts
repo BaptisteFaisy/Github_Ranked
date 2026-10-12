@@ -82,7 +82,7 @@ export function getTier(elo: number): Tier {
  *
  * @example
  * ```typescript
- * const elo = 1350;
+ * const elo = 1622;
  * const tier = getTier(elo); // 'Gold'
  * const division = getDivision(elo, tier); // 'II' (Gold II)
  * ```
@@ -132,7 +132,7 @@ export function getDivision(elo: number, tier: Tier): Division | null {
  *
  * @example
  * ```typescript
- * const elo = 1350;
+ * const elo = 1622;
  * const tier = getTier(elo); // 'Gold'
  * const division = getDivision(elo, tier); // 'II'
  * const gp = calculateGP(elo, tier, division); // 50 (halfway through Gold II)
@@ -347,7 +347,7 @@ export function formatPercent(value: number): string {
  * // {
  * //   tier: 'Gold',
  * //   division: 'II',
- * //   elo: 1350,
+ * //   elo: 1622,
  * //   gp: 50,
  * //   percentile: 91.772..., // unrounded full precision
  * //   wpi: 5550,

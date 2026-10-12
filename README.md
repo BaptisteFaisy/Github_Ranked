@@ -34,18 +34,18 @@ The dashboard shows:
 
 ## Tiers
 
-| Tier        | Rating      | Percentile |
-| ----------- | ----------- | ---------- |
-| Iron        | 0 - 599     | Bottom 5%  |
-| Bronze      | 600 - 899   | 5 - 15%    |
-| Silver      | 900 - 1199  | 15 - 40%   |
-| Gold        | 1200 - 1499 | 40 - 65%   |
-| Platinum    | 1500 - 1699 | 65 - 80%   |
-| Emerald     | 1700 - 1999 | 80 - 90%   |
-| Diamond     | 2000 - 2399 | 90 - 97%   |
-| Master      | 2400 - 2599 | 97 - 99%   |
-| Grandmaster | 2600 - 2999 | 99 - 99.9% |
-| Challenger  | 3000+       | Top 0.1%   |
+| Tier        | Rating      | Top %       |
+| ----------- | ----------- | ----------- |
+| Iron        | 0 - 930     | Below 75%   |
+| Bronze      | 931 - 1199  | Top 75%     |
+| Silver      | 1200 - 1469 | Top 50%     |
+| Gold        | 1470 - 1712 | Top 25%     |
+| Platinum    | 1713 - 2130 | Top 10%     |
+| Emerald     | 2131 - 2436 | Top 1%      |
+| Diamond     | 2437 - 2687 | Top 0.1%    |
+| Master      | 2688 - 2905 | Top 0.01%   |
+| Grandmaster | 2906 - 3101 | Top 0.001%  |
+| Challenger  | 3102+       | Top 0.0001% |
 
 Tiers below Master have divisions (IV to I).
 

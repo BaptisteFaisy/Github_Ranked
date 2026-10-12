@@ -371,7 +371,7 @@ describe('Ranking Engine - calculateElo', () => {
     const zScore = 0; // At global mean
     const elo = calculateElo(zScore);
 
-    // Should return base Elo (Gold IV)
+    // Should return base Elo (Silver IV)
     expect(elo).toBe(BASE_ELO); // 1200
   });
 
@@ -379,7 +379,7 @@ describe('Ranking Engine - calculateElo', () => {
     const zScore = 2.0; // Two standard deviations above mean
     const elo = calculateElo(zScore);
 
-    // 1200 + (2.0 × 400) = 2000 (Diamond IV)
+    // 1200 + (2.0 × 400) = 2000 (Platinum II)
     expect(elo).toBe(2000);
   });
 
@@ -387,7 +387,7 @@ describe('Ranking Engine - calculateElo', () => {
     const zScore = -1.0; // One standard deviation below mean
     const elo = calculateElo(zScore);
 
-    // 1200 + (-1.0 × 400) = 800 (Bronze tier)
+    // 1200 + (-1.0 × 400) = 800 (Iron tier)
     expect(elo).toBe(800);
   });
 
@@ -408,13 +408,13 @@ describe('Ranking Engine - calculateElo', () => {
     expect(elo).toBe(0);
   });
 
-  it('should not clamp maximum (Challenger can exceed 3000)', () => {
+  it('should not clamp maximum (Challenger can exceed 3102)', () => {
     const zScore = 5.0; // Very high Z-score
     const elo = calculateElo(zScore);
 
     // 1200 + (5.0 × 400) = 3200 (Challenger)
     expect(elo).toBe(3200);
-    expect(elo).toBeGreaterThan(3000);
+    expect(elo).toBeGreaterThan(3101);
   });
 
   it('should use correct formula constants', () => {
@@ -426,21 +426,21 @@ describe('Ranking Engine - calculateElo', () => {
     expect(elo).toBe(expectedElo);
   });
 
-  it('should map to Gold tier for median developer', () => {
+  it('should map to Silver tier for median developer', () => {
     const zScore = 0; // Median developer
     const elo = calculateElo(zScore);
 
-    // Should be 1200 (Gold IV)
+    // Should be 1200 (Silver IV)
     expect(elo).toBe(1200);
-    expect(elo).toBeGreaterThanOrEqual(1200); // Gold range: 1200-1499
-    expect(elo).toBeLessThan(1500);
+    expect(elo).toBeGreaterThanOrEqual(1200); // Silver range: 1200-1469
+    expect(elo).toBeLessThan(1470);
   });
 
-  it('should map to Diamond tier for high performers', () => {
-    const zScore = 2.0; // ~97.5th percentile
+  it('should map to Platinum tier for high performers', () => {
+    const zScore = 2.0; // ~97.7th percentile
     const elo = calculateElo(zScore);
 
-    // Should be 2000 (Diamond IV)
+    // Should be 2000 (Platinum II)
     expect(elo).toBe(2000);
   });
 
@@ -448,7 +448,7 @@ describe('Ranking Engine - calculateElo', () => {
     const zScore = 0.5;
     const elo = calculateElo(zScore);
 
-    // 1200 + (0.5 × 400) = 1400 (Gold I)
+    // 1200 + (0.5 × 400) = 1400 (Silver II)
     expect(elo).toBe(1400);
   });
 
@@ -463,23 +463,23 @@ describe('Ranking Engine - calculateElo', () => {
     expect(elo2).toBe(elo3);
   });
 
-  it('should handle Challenger tier (3000+)', () => {
+  it('should handle Grandmaster tier (2906-3101)', () => {
     const zScore = 4.5; // Top 0.0003%
     const elo = calculateElo(zScore);
 
-    // 1200 + (4.5 × 400) = 3000 (Challenger)
+    // 1200 + (4.5 × 400) = 3000 (Grandmaster)
     expect(elo).toBe(3000);
-    expect(elo).toBeGreaterThanOrEqual(3000);
+    expect(elo).toBeLessThan(3102);
   });
 
-  it('should handle Iron tier (0-599)', () => {
-    const zScore = -2.0; // Bottom ~2.5%
+  it('should handle Iron tier (0-930)', () => {
+    const zScore = -2.0; // Bottom ~2.3%
     const elo = calculateElo(zScore);
 
     // 1200 + (-2.0 × 400) = 400 (Iron tier)
     expect(elo).toBe(400);
     expect(elo).toBeGreaterThanOrEqual(0);
-    expect(elo).toBeLessThan(600);
+    expect(elo).toBeLessThan(931);
   });
 
   it('should produce higher Elo for higher Z-score', () => {
@@ -494,62 +494,62 @@ describe('Ranking Engine - calculateElo', () => {
 });
 
 describe('Ranking Engine - getTier', () => {
-  it('should return Iron for Elo 0-599', () => {
+  it('should return Iron for Elo 0-930', () => {
     expect(getTier(0)).toBe('Iron');
-    expect(getTier(299)).toBe('Iron');
-    expect(getTier(599)).toBe('Iron');
+    expect(getTier(465)).toBe('Iron');
+    expect(getTier(930)).toBe('Iron');
   });
 
-  it('should return Bronze for Elo 600-899', () => {
-    expect(getTier(600)).toBe('Bronze');
-    expect(getTier(750)).toBe('Bronze');
-    expect(getTier(899)).toBe('Bronze');
+  it('should return Bronze for Elo 931-1199', () => {
+    expect(getTier(931)).toBe('Bronze');
+    expect(getTier(1065)).toBe('Bronze');
+    expect(getTier(1199)).toBe('Bronze');
   });
 
-  it('should return Silver for Elo 900-1199', () => {
-    expect(getTier(900)).toBe('Silver');
-    expect(getTier(1050)).toBe('Silver');
-    expect(getTier(1199)).toBe('Silver');
+  it('should return Silver for Elo 1200-1469', () => {
+    expect(getTier(1200)).toBe('Silver');
+    expect(getTier(1335)).toBe('Silver');
+    expect(getTier(1469)).toBe('Silver');
   });
 
-  it('should return Gold for Elo 1200-1499', () => {
-    expect(getTier(1200)).toBe('Gold');
-    expect(getTier(1350)).toBe('Gold');
-    expect(getTier(1499)).toBe('Gold');
+  it('should return Gold for Elo 1470-1712', () => {
+    expect(getTier(1470)).toBe('Gold');
+    expect(getTier(1591)).toBe('Gold');
+    expect(getTier(1712)).toBe('Gold');
   });
 
-  it('should return Platinum for Elo 1500-1699', () => {
-    expect(getTier(1500)).toBe('Platinum');
-    expect(getTier(1600)).toBe('Platinum');
-    expect(getTier(1699)).toBe('Platinum');
+  it('should return Platinum for Elo 1713-2130', () => {
+    expect(getTier(1713)).toBe('Platinum');
+    expect(getTier(1921)).toBe('Platinum');
+    expect(getTier(2130)).toBe('Platinum');
   });
 
-  it('should return Emerald for Elo 1700-1999', () => {
-    expect(getTier(1700)).toBe('Emerald');
-    expect(getTier(1850)).toBe('Emerald');
-    expect(getTier(1999)).toBe('Emerald');
+  it('should return Emerald for Elo 2131-2436', () => {
+    expect(getTier(2131)).toBe('Emerald');
+    expect(getTier(2283)).toBe('Emerald');
+    expect(getTier(2436)).toBe('Emerald');
   });
 
-  it('should return Diamond for Elo 2000-2399', () => {
-    expect(getTier(2000)).toBe('Diamond');
-    expect(getTier(2200)).toBe('Diamond');
-    expect(getTier(2399)).toBe('Diamond');
+  it('should return Diamond for Elo 2437-2687', () => {
+    expect(getTier(2437)).toBe('Diamond');
+    expect(getTier(2562)).toBe('Diamond');
+    expect(getTier(2687)).toBe('Diamond');
   });
 
-  it('should return Master for Elo 2400-2599', () => {
-    expect(getTier(2400)).toBe('Master');
-    expect(getTier(2500)).toBe('Master');
-    expect(getTier(2599)).toBe('Master');
+  it('should return Master for Elo 2688-2905', () => {
+    expect(getTier(2688)).toBe('Master');
+    expect(getTier(2796)).toBe('Master');
+    expect(getTier(2905)).toBe('Master');
   });
 
-  it('should return Grandmaster for Elo 2600-2999', () => {
-    expect(getTier(2600)).toBe('Grandmaster');
-    expect(getTier(2800)).toBe('Grandmaster');
-    expect(getTier(2999)).toBe('Grandmaster');
+  it('should return Grandmaster for Elo 2906-3101', () => {
+    expect(getTier(2906)).toBe('Grandmaster');
+    expect(getTier(3003)).toBe('Grandmaster');
+    expect(getTier(3101)).toBe('Grandmaster');
   });
 
-  it('should return Challenger for Elo 3000+', () => {
-    expect(getTier(3000)).toBe('Challenger');
+  it('should return Challenger for Elo 3102+', () => {
+    expect(getTier(3102)).toBe('Challenger');
     expect(getTier(3500)).toBe('Challenger');
     expect(getTier(5000)).toBe('Challenger');
   });
@@ -557,35 +557,35 @@ describe('Ranking Engine - getTier', () => {
   it('should handle boundary values correctly', () => {
     // Lower boundaries (inclusive)
     expect(getTier(0)).toBe('Iron');
-    expect(getTier(600)).toBe('Bronze');
-    expect(getTier(900)).toBe('Silver');
-    expect(getTier(1200)).toBe('Gold');
-    expect(getTier(1500)).toBe('Platinum');
-    expect(getTier(1700)).toBe('Emerald');
-    expect(getTier(2000)).toBe('Diamond');
-    expect(getTier(2400)).toBe('Master');
-    expect(getTier(2600)).toBe('Grandmaster');
-    expect(getTier(3000)).toBe('Challenger');
+    expect(getTier(931)).toBe('Bronze');
+    expect(getTier(1200)).toBe('Silver');
+    expect(getTier(1470)).toBe('Gold');
+    expect(getTier(1713)).toBe('Platinum');
+    expect(getTier(2131)).toBe('Emerald');
+    expect(getTier(2437)).toBe('Diamond');
+    expect(getTier(2688)).toBe('Master');
+    expect(getTier(2906)).toBe('Grandmaster');
+    expect(getTier(3102)).toBe('Challenger');
   });
 
   it('should handle values just below tier boundaries', () => {
     // Upper boundaries (exclusive)
-    expect(getTier(599)).toBe('Iron');
-    expect(getTier(899)).toBe('Bronze');
-    expect(getTier(1199)).toBe('Silver');
-    expect(getTier(1499)).toBe('Gold');
-    expect(getTier(1699)).toBe('Platinum');
-    expect(getTier(1999)).toBe('Emerald');
-    expect(getTier(2399)).toBe('Diamond');
-    expect(getTier(2599)).toBe('Master');
-    expect(getTier(2999)).toBe('Grandmaster');
+    expect(getTier(930)).toBe('Iron');
+    expect(getTier(1199)).toBe('Bronze');
+    expect(getTier(1469)).toBe('Silver');
+    expect(getTier(1712)).toBe('Gold');
+    expect(getTier(2130)).toBe('Platinum');
+    expect(getTier(2436)).toBe('Emerald');
+    expect(getTier(2687)).toBe('Diamond');
+    expect(getTier(2905)).toBe('Master');
+    expect(getTier(3101)).toBe('Grandmaster');
   });
 
-  it('should handle median developer (Gold tier)', () => {
+  it('should handle median developer (Silver tier)', () => {
     const elo = 1200; // BASE_ELO
     const tier = getTier(elo);
 
-    expect(tier).toBe('Gold');
+    expect(tier).toBe('Silver');
   });
 
   it('should return consistent results for same input', () => {
@@ -597,21 +597,21 @@ describe('Ranking Engine - getTier', () => {
 
     expect(tier1).toBe(tier2);
     expect(tier2).toBe(tier3);
-    expect(tier1).toBe('Emerald');
+    expect(tier1).toBe('Platinum');
   });
 
   it('should handle all 10 tiers', () => {
     // Verify all tiers are accessible
     const tierElos = [
       { elo: 300, tier: 'Iron' },
-      { elo: 750, tier: 'Bronze' },
-      { elo: 1050, tier: 'Silver' },
-      { elo: 1350, tier: 'Gold' },
-      { elo: 1600, tier: 'Platinum' },
-      { elo: 1850, tier: 'Emerald' },
-      { elo: 2200, tier: 'Diamond' },
-      { elo: 2500, tier: 'Master' },
-      { elo: 2800, tier: 'Grandmaster' },
+      { elo: 1000, tier: 'Bronze' },
+      { elo: 1300, tier: 'Silver' },
+      { elo: 1550, tier: 'Gold' },
+      { elo: 1900, tier: 'Platinum' },
+      { elo: 2250, tier: 'Emerald' },
+      { elo: 2550, tier: 'Diamond' },
+      { elo: 2800, tier: 'Master' },
+      { elo: 3000, tier: 'Grandmaster' },
       { elo: 3200, tier: 'Challenger' },
     ];
 
@@ -624,16 +624,41 @@ describe('Ranking Engine - getTier', () => {
     expect(getTier(10000)).toBe('Challenger');
     expect(getTier(999999)).toBe('Challenger');
   });
+
+  it('should anchor each tier minimum to its named Top % band', () => {
+    // Tier minimums are rounded UP so everyone inside a tier is within its
+    // named Top % (0.1% relative tolerance covers erf approximation noise).
+    const anchors: Array<{ min: number; top: number }> = [
+      { min: 3102, top: 0.0001 }, // Challenger
+      { min: 2906, top: 0.001 }, // Grandmaster
+      { min: 2688, top: 0.01 }, // Master
+      { min: 2437, top: 0.1 }, // Diamond
+      { min: 2131, top: 1 }, // Emerald
+      { min: 1713, top: 10 }, // Platinum
+      { min: 1470, top: 25 }, // Gold
+      { min: 1200, top: 50 }, // Silver
+      { min: 931, top: 75 }, // Bronze
+    ];
+
+    for (const { min, top } of anchors) {
+      const topAtMin = calculateTopPercent((min - BASE_ELO) / ELO_PER_SIGMA);
+      const topBelow = calculateTopPercent(
+        (min - 1 - BASE_ELO) / ELO_PER_SIGMA
+      );
+      expect(topAtMin).toBeLessThanOrEqual(top * 1.001);
+      expect(topBelow).toBeGreaterThan(top * 0.999);
+    }
+  });
 });
 
 describe('Ranking Engine - getDivision', () => {
   it('should return null for Master tier', () => {
-    const division = getDivision(2500, 'Master');
+    const division = getDivision(2800, 'Master');
     expect(division).toBeNull();
   });
 
   it('should return null for Grandmaster tier', () => {
-    const division = getDivision(2800, 'Grandmaster');
+    const division = getDivision(3000, 'Grandmaster');
     expect(division).toBeNull();
   });
 
@@ -643,83 +668,83 @@ describe('Ranking Engine - getDivision', () => {
   });
 
   it('should return Division IV for bottom quarter of Gold tier', () => {
-    // Gold: 1200-1499 (range: 300)
-    // Division IV: 1200-1274 (0-74 within range)
-    expect(getDivision(1200, 'Gold')).toBe('IV');
-    expect(getDivision(1250, 'Gold')).toBe('IV');
-    expect(getDivision(1274, 'Gold')).toBe('IV');
+    // Gold: 1470-1712 (range: 243, division: 60.75)
+    // Division IV: 1470-1530 (0-60 within range)
+    expect(getDivision(1470, 'Gold')).toBe('IV');
+    expect(getDivision(1500, 'Gold')).toBe('IV');
+    expect(getDivision(1530, 'Gold')).toBe('IV');
   });
 
   it('should return Division III for second quarter of Gold tier', () => {
-    // Division III: 1275-1349 (75-149 within range)
-    expect(getDivision(1275, 'Gold')).toBe('III');
-    expect(getDivision(1312, 'Gold')).toBe('III');
-    expect(getDivision(1349, 'Gold')).toBe('III');
+    // Division III: 1531-1591 (61-121 within range)
+    expect(getDivision(1531, 'Gold')).toBe('III');
+    expect(getDivision(1561, 'Gold')).toBe('III');
+    expect(getDivision(1591, 'Gold')).toBe('III');
   });
 
   it('should return Division II for third quarter of Gold tier', () => {
-    // Division II: 1350-1424 (150-224 within range)
-    expect(getDivision(1350, 'Gold')).toBe('II');
-    expect(getDivision(1387, 'Gold')).toBe('II');
-    expect(getDivision(1424, 'Gold')).toBe('II');
+    // Division II: 1592-1652 (122-182 within range, bound at 182.25)
+    expect(getDivision(1592, 'Gold')).toBe('II');
+    expect(getDivision(1621, 'Gold')).toBe('II');
+    expect(getDivision(1652, 'Gold')).toBe('II');
   });
 
   it('should return Division I for top quarter of Gold tier', () => {
-    // Division I: 1425-1499 (225-299 within range)
-    expect(getDivision(1425, 'Gold')).toBe('I');
-    expect(getDivision(1462, 'Gold')).toBe('I');
-    expect(getDivision(1499, 'Gold')).toBe('I');
+    // Division I: 1653-1712 (183-242 within range)
+    expect(getDivision(1653, 'Gold')).toBe('I');
+    expect(getDivision(1682, 'Gold')).toBe('I');
+    expect(getDivision(1712, 'Gold')).toBe('I');
   });
 
   it('should handle all divisions in Iron tier', () => {
-    // Iron: 0-599 (range: 600)
-    // Each division: 150 Elo
-    expect(getDivision(0, 'Iron')).toBe('IV'); // 0-149
-    expect(getDivision(149, 'Iron')).toBe('IV');
-    expect(getDivision(150, 'Iron')).toBe('III'); // 150-299
-    expect(getDivision(299, 'Iron')).toBe('III');
-    expect(getDivision(300, 'Iron')).toBe('II'); // 300-449
-    expect(getDivision(449, 'Iron')).toBe('II');
-    expect(getDivision(450, 'Iron')).toBe('I'); // 450-599
-    expect(getDivision(599, 'Iron')).toBe('I');
+    // Iron: 0-930 (range: 931)
+    // Each division: 232.75 Elo
+    expect(getDivision(0, 'Iron')).toBe('IV'); // 0-232
+    expect(getDivision(232, 'Iron')).toBe('IV');
+    expect(getDivision(233, 'Iron')).toBe('III'); // 233-465
+    expect(getDivision(465, 'Iron')).toBe('III');
+    expect(getDivision(466, 'Iron')).toBe('II'); // 466-698
+    expect(getDivision(698, 'Iron')).toBe('II');
+    expect(getDivision(699, 'Iron')).toBe('I'); // 699-930
+    expect(getDivision(930, 'Iron')).toBe('I');
   });
 
   it('should handle all divisions in Diamond tier', () => {
-    // Diamond: 2000-2399 (range: 400)
-    // Each division: 100 Elo
-    expect(getDivision(2000, 'Diamond')).toBe('IV'); // 2000-2099
-    expect(getDivision(2099, 'Diamond')).toBe('IV');
-    expect(getDivision(2100, 'Diamond')).toBe('III'); // 2100-2199
-    expect(getDivision(2199, 'Diamond')).toBe('III');
-    expect(getDivision(2200, 'Diamond')).toBe('II'); // 2200-2299
-    expect(getDivision(2299, 'Diamond')).toBe('II');
-    expect(getDivision(2300, 'Diamond')).toBe('I'); // 2300-2399
-    expect(getDivision(2399, 'Diamond')).toBe('I');
+    // Diamond: 2437-2687 (range: 251)
+    // Each division: 62.75 Elo
+    expect(getDivision(2437, 'Diamond')).toBe('IV'); // 2437-2499
+    expect(getDivision(2499, 'Diamond')).toBe('IV');
+    expect(getDivision(2500, 'Diamond')).toBe('III'); // 2500-2562
+    expect(getDivision(2562, 'Diamond')).toBe('III');
+    expect(getDivision(2563, 'Diamond')).toBe('II'); // 2563-2625
+    expect(getDivision(2625, 'Diamond')).toBe('II');
+    expect(getDivision(2626, 'Diamond')).toBe('I'); // 2626-2687
+    expect(getDivision(2687, 'Diamond')).toBe('I');
   });
 
   it('should handle all divisions in Platinum tier', () => {
-    // Platinum: 1500-1699 (range: 200)
-    // Each division: 50 Elo
-    expect(getDivision(1500, 'Platinum')).toBe('IV');
-    expect(getDivision(1549, 'Platinum')).toBe('IV');
-    expect(getDivision(1550, 'Platinum')).toBe('III');
-    expect(getDivision(1599, 'Platinum')).toBe('III');
-    expect(getDivision(1600, 'Platinum')).toBe('II');
-    expect(getDivision(1649, 'Platinum')).toBe('II');
-    expect(getDivision(1650, 'Platinum')).toBe('I');
-    expect(getDivision(1699, 'Platinum')).toBe('I');
+    // Platinum: 1713-2130 (range: 418)
+    // Each division: 104.5 Elo
+    expect(getDivision(1713, 'Platinum')).toBe('IV');
+    expect(getDivision(1817, 'Platinum')).toBe('IV');
+    expect(getDivision(1818, 'Platinum')).toBe('III');
+    expect(getDivision(1921, 'Platinum')).toBe('III');
+    expect(getDivision(1922, 'Platinum')).toBe('II');
+    expect(getDivision(2026, 'Platinum')).toBe('II');
+    expect(getDivision(2027, 'Platinum')).toBe('I');
+    expect(getDivision(2130, 'Platinum')).toBe('I');
   });
 
   it('should work correctly with tier boundaries', () => {
     // Test at exact tier boundaries
-    expect(getDivision(1200, 'Gold')).toBe('IV'); // Start of Gold
-    expect(getDivision(1499, 'Gold')).toBe('I'); // End of Gold
-    expect(getDivision(2000, 'Diamond')).toBe('IV'); // Start of Diamond
-    expect(getDivision(2399, 'Diamond')).toBe('I'); // End of Diamond
+    expect(getDivision(1470, 'Gold')).toBe('IV'); // Start of Gold
+    expect(getDivision(1712, 'Gold')).toBe('I'); // End of Gold
+    expect(getDivision(2437, 'Diamond')).toBe('IV'); // Start of Diamond
+    expect(getDivision(2687, 'Diamond')).toBe('I'); // End of Diamond
   });
 
   it('should return consistent results for same input', () => {
-    const elo = 1350;
+    const elo = 1621;
     const tier = 'Gold';
 
     const div1 = getDivision(elo, tier);
@@ -733,47 +758,47 @@ describe('Ranking Engine - getDivision', () => {
 
   it('should handle all tiers with divisions', () => {
     // Test one division from each tier that uses divisions
-    expect(getDivision(300, 'Iron')).toBe('II');
-    expect(getDivision(750, 'Bronze')).toBe('II');
-    expect(getDivision(1050, 'Silver')).toBe('II');
-    expect(getDivision(1350, 'Gold')).toBe('II');
-    expect(getDivision(1600, 'Platinum')).toBe('II');
-    expect(getDivision(1850, 'Emerald')).toBe('II');
-    expect(getDivision(2200, 'Diamond')).toBe('II');
+    expect(getDivision(500, 'Iron')).toBe('II');
+    expect(getDivision(1100, 'Bronze')).toBe('II');
+    expect(getDivision(1350, 'Silver')).toBe('II');
+    expect(getDivision(1600, 'Gold')).toBe('II');
+    expect(getDivision(1950, 'Platinum')).toBe('II');
+    expect(getDivision(2300, 'Emerald')).toBe('II');
+    expect(getDivision(2600, 'Diamond')).toBe('II');
   });
 
   it('should divide tier range into exactly 4 equal divisions', () => {
-    // Verify equal division for Bronze (600-899, range: 300)
-    // Each division should be 75 Elo
-    expect(getDivision(600, 'Bronze')).toBe('IV'); // 600-674
-    expect(getDivision(674, 'Bronze')).toBe('IV');
-    expect(getDivision(675, 'Bronze')).toBe('III'); // 675-749
-    expect(getDivision(749, 'Bronze')).toBe('III');
-    expect(getDivision(750, 'Bronze')).toBe('II'); // 750-824
-    expect(getDivision(824, 'Bronze')).toBe('II');
-    expect(getDivision(825, 'Bronze')).toBe('I'); // 825-899
-    expect(getDivision(899, 'Bronze')).toBe('I');
+    // Verify equal division for Bronze (931-1199, range: 269)
+    // Each division should be 67.25 Elo
+    expect(getDivision(931, 'Bronze')).toBe('IV'); // 931-998
+    expect(getDivision(998, 'Bronze')).toBe('IV');
+    expect(getDivision(999, 'Bronze')).toBe('III'); // 999-1065
+    expect(getDivision(1065, 'Bronze')).toBe('III');
+    expect(getDivision(1066, 'Bronze')).toBe('II'); // 1066-1132
+    expect(getDivision(1132, 'Bronze')).toBe('II');
+    expect(getDivision(1133, 'Bronze')).toBe('I'); // 1133-1199
+    expect(getDivision(1199, 'Bronze')).toBe('I');
   });
 
   it('should handle edge case at exact division boundaries', () => {
-    // Test exact boundaries in Silver (900-1199, range: 300)
-    // Each division: 75 Elo
+    // Test exact boundaries in Silver (1200-1469, range: 270)
+    // Each division: 67.5 Elo
     const tier = 'Silver';
-    expect(getDivision(900, tier)).toBe('IV'); // Exact start
-    expect(getDivision(975, tier)).toBe('III'); // Exact second division start
-    expect(getDivision(1050, tier)).toBe('II'); // Exact third division start
-    expect(getDivision(1125, tier)).toBe('I'); // Exact fourth division start
+    expect(getDivision(1200, tier)).toBe('IV'); // Exact start
+    expect(getDivision(1268, tier)).toBe('III'); // Exact second division start
+    expect(getDivision(1335, tier)).toBe('II'); // Exact third division start
+    expect(getDivision(1403, tier)).toBe('I'); // Exact fourth division start
   });
 });
 
 describe('Ranking Engine - calculateGP', () => {
   it('should return 0 for Master tier', () => {
-    const gp = calculateGP(2500, 'Master', null);
+    const gp = calculateGP(2800, 'Master', null);
     expect(gp).toBe(0);
   });
 
   it('should return 0 for Grandmaster tier', () => {
-    const gp = calculateGP(2800, 'Grandmaster', null);
+    const gp = calculateGP(3000, 'Grandmaster', null);
     expect(gp).toBe(0);
   });
 
@@ -783,82 +808,82 @@ describe('Ranking Engine - calculateGP', () => {
   });
 
   it('should return 0 GPat start of division', () => {
-    // Gold: 1200-1499, Division IV: 1200-1274
-    const gp = calculateGP(1200, 'Gold', 'IV');
+    // Gold: 1470-1712, Division IV: 1470-1530
+    const gp = calculateGP(1470, 'Gold', 'IV');
     expect(gp).toBe(0);
   });
 
   it('should return 99 GPat end of division', () => {
-    // Gold Division IV: 1200-1274 (range: 75)
-    // 1274 should give 99 LP
-    const gp = calculateGP(1274, 'Gold', 'IV');
+    // Gold Division IV: 1470-1530 (division: 60.75)
+    // 1530 should give 99 GP
+    const gp = calculateGP(1530, 'Gold', 'IV');
     expect(gp).toBe(99);
   });
 
   it('should return ~50 GPhalfway through division', () => {
-    // Gold Division II: 1350-1424 (range: 75)
-    // 1387 is halfway (37.5 Elo into 75 range)
-    const gp = calculateGP(1387, 'Gold', 'II');
-    // (37 / 75) * 100 = 49.33 → floor(49.33) = 49
+    // Gold Division II: 1592-1651 (division: 60.75, min: 1591.5)
+    // 1622 is halfway (30.5 Elo into 60.75 range)
+    const gp = calculateGP(1622, 'Gold', 'II');
+    // (30.5 / 60.75) * 100 = 50.2 → floor(50.2) = 50
     expect(gp).toBeGreaterThanOrEqual(49);
     expect(gp).toBeLessThanOrEqual(50);
   });
 
   it('should calculate GPcorrectly in Gold IV', () => {
-    // Gold: 1200-1499 (range: 300), Division IV: 1200-1274 (range: 75)
+    // Gold: 1470-1712 (range: 243), Division IV: 1470-1530 (division: 60.75)
     const tier = 'Gold';
     const division = 'IV';
 
-    expect(calculateGP(1200, tier, division)).toBe(0); // Start
-    expect(calculateGP(1237, tier, division)).toBe(49); // Halfway
-    expect(calculateGP(1274, tier, division)).toBe(99); // End
+    expect(calculateGP(1470, tier, division)).toBe(0); // Start
+    expect(calculateGP(1500, tier, division)).toBe(49); // Halfway
+    expect(calculateGP(1530, tier, division)).toBe(99); // End
   });
 
   it('should calculate GPcorrectly in Diamond II', () => {
-    // Diamond: 2000-2399 (range: 400), each division: 100 Elo
-    // Division II: 2200-2299 (range: 100)
+    // Diamond: 2437-2687 (range: 251), each division: 62.75 Elo
+    // Division II: 2563-2625 (min: 2562.5)
     const tier = 'Diamond';
     const division = 'II';
 
-    expect(calculateGP(2200, tier, division)).toBe(0); // Start
-    expect(calculateGP(2250, tier, division)).toBe(50); // Halfway
-    expect(calculateGP(2299, tier, division)).toBe(99); // End
+    expect(calculateGP(2563, tier, division)).toBe(0); // Start
+    expect(calculateGP(2594, tier, division)).toBe(50); // Halfway
+    expect(calculateGP(2625, tier, division)).toBe(99); // End
   });
 
   it('should calculate GPcorrectly in Iron I', () => {
-    // Iron: 0-599 (range: 600), each division: 150 Elo
-    // Division I: 450-599 (range: 150)
+    // Iron: 0-930 (range: 931), each division: 232.75 Elo
+    // Division I: 699-930 (min: 698.25)
     const tier = 'Iron';
     const division = 'I';
 
-    expect(calculateGP(450, tier, division)).toBe(0); // Start
-    expect(calculateGP(524, tier, division)).toBe(49); // Near halfway
-    expect(calculateGP(599, tier, division)).toBe(99); // End
+    expect(calculateGP(699, tier, division)).toBe(0); // Start
+    expect(calculateGP(814, tier, division)).toBe(49); // Near halfway
+    expect(calculateGP(930, tier, division)).toBe(99); // End
   });
 
   it('should handle all divisions in Platinum tier', () => {
-    // Platinum: 1500-1699 (range: 200), each division: 50 Elo
+    // Platinum: 1713-2130 (range: 418), each division: 104.5 Elo
     const tier = 'Platinum';
 
-    // Division IV: 1500-1549
-    expect(calculateGP(1500, tier, 'IV')).toBe(0);
-    expect(calculateGP(1524, tier, 'IV')).toBe(48);
-    expect(calculateGP(1549, tier, 'IV')).toBe(99);
+    // Division IV: 1713-1817
+    expect(calculateGP(1713, tier, 'IV')).toBe(0);
+    expect(calculateGP(1764, tier, 'IV')).toBe(48);
+    expect(calculateGP(1817, tier, 'IV')).toBe(99);
 
-    // Division III: 1550-1599
-    expect(calculateGP(1550, tier, 'III')).toBe(0);
-    expect(calculateGP(1574, tier, 'III')).toBe(48);
-    expect(calculateGP(1599, tier, 'III')).toBe(99);
+    // Division III: 1818-1921 (min: 1817.5)
+    expect(calculateGP(1818, tier, 'III')).toBe(0);
+    expect(calculateGP(1868, tier, 'III')).toBe(48);
+    expect(calculateGP(1921, tier, 'III')).toBe(99);
 
-    // Division II: 1600-1649
-    expect(calculateGP(1600, tier, 'II')).toBe(0);
-    expect(calculateGP(1624, tier, 'II')).toBe(48);
-    expect(calculateGP(1649, tier, 'II')).toBe(99);
+    // Division II: 1922-2026
+    expect(calculateGP(1922, tier, 'II')).toBe(0);
+    expect(calculateGP(1973, tier, 'II')).toBe(48);
+    expect(calculateGP(2026, tier, 'II')).toBe(99);
 
-    // Division I: 1650-1699
-    expect(calculateGP(1650, tier, 'I')).toBe(0);
-    expect(calculateGP(1674, tier, 'I')).toBe(48);
-    expect(calculateGP(1699, tier, 'I')).toBe(99);
+    // Division I: 2027-2130 (min: 2026.5)
+    expect(calculateGP(2027, tier, 'I')).toBe(0);
+    expect(calculateGP(2077, tier, 'I')).toBe(48);
+    expect(calculateGP(2130, tier, 'I')).toBe(99);
   });
 
   it('should never return GPabove 99', () => {
@@ -867,8 +892,8 @@ describe('Ranking Engine - calculateGP', () => {
     const division = 'I';
 
     // Even at the very top of the division
-    expect(calculateGP(1499, tier, division)).toBe(99);
-    expect(calculateGP(1499, tier, division)).toBeLessThanOrEqual(99);
+    expect(calculateGP(1712, tier, division)).toBe(99);
+    expect(calculateGP(1712, tier, division)).toBeLessThanOrEqual(99);
   });
 
   it('should never return GPbelow 0', () => {
@@ -876,8 +901,8 @@ describe('Ranking Engine - calculateGP', () => {
     const tier = 'Gold';
     const division = 'IV';
 
-    expect(calculateGP(1200, tier, division)).toBe(0);
-    expect(calculateGP(1200, tier, division)).toBeGreaterThanOrEqual(0);
+    expect(calculateGP(1470, tier, division)).toBe(0);
+    expect(calculateGP(1470, tier, division)).toBeGreaterThanOrEqual(0);
   });
 
   it('should return integer GPvalues', () => {
@@ -885,7 +910,7 @@ describe('Ranking Engine - calculateGP', () => {
     const tier = 'Gold';
     const division = 'II';
 
-    for (let elo = 1350; elo <= 1424; elo += 5) {
+    for (let elo = 1592; elo <= 1652; elo += 5) {
       const gp = calculateGP(elo, tier, division);
       expect(Number.isInteger(gp)).toBe(true);
     }
@@ -895,13 +920,13 @@ describe('Ranking Engine - calculateGP', () => {
     // Test that GPscales linearly with Elo within division
     const tier = 'Gold';
     const division = 'IV';
-    // Gold IV: 1200-1274 (range: 75)
+    // Gold IV: 1470-1530 (division: 60.75)
 
-    const gp0 = calculateGP(1200, tier, division); // 0% through
-    const gp25 = calculateGP(1218, tier, division); // ~25% through
-    const gp50 = calculateGP(1237, tier, division); // ~50% through
-    const gp75 = calculateGP(1256, tier, division); // ~75% through
-    const gp100 = calculateGP(1274, tier, division); // 100% through
+    const gp0 = calculateGP(1470, tier, division); // 0% through
+    const gp25 = calculateGP(1485, tier, division); // ~25% through
+    const gp50 = calculateGP(1500, tier, division); // ~50% through
+    const gp75 = calculateGP(1515, tier, division); // ~75% through
+    const gp100 = calculateGP(1530, tier, division); // 100% through
 
     expect(gp0).toBe(0);
     expect(gp25).toBeGreaterThanOrEqual(23);
@@ -915,14 +940,14 @@ describe('Ranking Engine - calculateGP', () => {
 
   it('should handle exact tier boundaries', () => {
     // Test GPat tier boundaries
-    expect(calculateGP(1200, 'Gold', 'IV')).toBe(0); // Start of Gold
-    expect(calculateGP(1499, 'Gold', 'I')).toBe(99); // End of Gold
-    expect(calculateGP(2000, 'Diamond', 'IV')).toBe(0); // Start of Diamond
-    expect(calculateGP(2399, 'Diamond', 'I')).toBe(99); // End of Diamond
+    expect(calculateGP(1470, 'Gold', 'IV')).toBe(0); // Start of Gold
+    expect(calculateGP(1712, 'Gold', 'I')).toBe(99); // End of Gold
+    expect(calculateGP(2437, 'Diamond', 'IV')).toBe(0); // Start of Diamond
+    expect(calculateGP(2687, 'Diamond', 'I')).toBe(99); // End of Diamond
   });
 
   it('should return consistent results for same input', () => {
-    const elo = 1350;
+    const elo = 1622;
     const tier = 'Gold';
     const division = 'II';
 
@@ -936,22 +961,22 @@ describe('Ranking Engine - calculateGP', () => {
 
   it('should work with all tiers that have divisions', () => {
     // Test one GPvalue from each tier with divisions
-    expect(calculateGP(300, 'Iron', 'II')).toBeGreaterThanOrEqual(0);
-    expect(calculateGP(750, 'Bronze', 'II')).toBeGreaterThanOrEqual(0);
-    expect(calculateGP(1050, 'Silver', 'II')).toBeGreaterThanOrEqual(0);
-    expect(calculateGP(1350, 'Gold', 'II')).toBeGreaterThanOrEqual(0);
-    expect(calculateGP(1600, 'Platinum', 'II')).toBeGreaterThanOrEqual(0);
-    expect(calculateGP(1850, 'Emerald', 'II')).toBeGreaterThanOrEqual(0);
-    expect(calculateGP(2200, 'Diamond', 'II')).toBeGreaterThanOrEqual(0);
+    expect(calculateGP(500, 'Iron', 'II')).toBeGreaterThanOrEqual(0);
+    expect(calculateGP(1100, 'Bronze', 'II')).toBeGreaterThanOrEqual(0);
+    expect(calculateGP(1350, 'Silver', 'II')).toBeGreaterThanOrEqual(0);
+    expect(calculateGP(1600, 'Gold', 'II')).toBeGreaterThanOrEqual(0);
+    expect(calculateGP(1950, 'Platinum', 'II')).toBeGreaterThanOrEqual(0);
+    expect(calculateGP(2300, 'Emerald', 'II')).toBeGreaterThanOrEqual(0);
+    expect(calculateGP(2600, 'Diamond', 'II')).toBeGreaterThanOrEqual(0);
 
     // All should be valid GPvalues
-    expect(calculateGP(300, 'Iron', 'II')).toBeLessThanOrEqual(99);
-    expect(calculateGP(750, 'Bronze', 'II')).toBeLessThanOrEqual(99);
-    expect(calculateGP(1050, 'Silver', 'II')).toBeLessThanOrEqual(99);
-    expect(calculateGP(1350, 'Gold', 'II')).toBeLessThanOrEqual(99);
-    expect(calculateGP(1600, 'Platinum', 'II')).toBeLessThanOrEqual(99);
-    expect(calculateGP(1850, 'Emerald', 'II')).toBeLessThanOrEqual(99);
-    expect(calculateGP(2200, 'Diamond', 'II')).toBeLessThanOrEqual(99);
+    expect(calculateGP(500, 'Iron', 'II')).toBeLessThanOrEqual(99);
+    expect(calculateGP(1100, 'Bronze', 'II')).toBeLessThanOrEqual(99);
+    expect(calculateGP(1350, 'Silver', 'II')).toBeLessThanOrEqual(99);
+    expect(calculateGP(1600, 'Gold', 'II')).toBeLessThanOrEqual(99);
+    expect(calculateGP(1950, 'Platinum', 'II')).toBeLessThanOrEqual(99);
+    expect(calculateGP(2300, 'Emerald', 'II')).toBeLessThanOrEqual(99);
+    expect(calculateGP(2600, 'Diamond', 'II')).toBeLessThanOrEqual(99);
   });
 });
 
@@ -1229,10 +1254,14 @@ describe('Ranking Engine - calculateRank (Integration)', () => {
 
     const rank = calculateRank(stats);
 
-    // High performer should be in upper tiers
-    expect(['Diamond', 'Master', 'Grandmaster', 'Challenger']).toContain(
-      rank.tier
-    );
+    // High performer should be in upper tiers (Top 1% and above)
+    expect([
+      'Emerald',
+      'Diamond',
+      'Master',
+      'Grandmaster',
+      'Challenger',
+    ]).toContain(rank.tier);
     expect(rank.elo).toBeGreaterThan(1800);
     expect(rank.percentile).toBeGreaterThan(80);
   });

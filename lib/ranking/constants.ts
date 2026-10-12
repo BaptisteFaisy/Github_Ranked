@@ -21,7 +21,7 @@ export const MEAN_LOG_SCORE = 6.5;
 export const STD_DEV = 1.5;
 
 /**
- * Base Elo rating - represents median developer (Gold IV)
+ * Base Elo rating - represents median developer (Silver IV)
  */
 export const BASE_ELO = 1200;
 
@@ -73,18 +73,33 @@ export const MAX_STARS_CAP = 1_000;
 /**
  * Elo ranges for each tier
  * Format: [minElo, maxElo (exclusive)]
+ *
+ * Each minimum is the Elo at which a developer enters the tier's Top % band
+ * (Top % = upper tail of the standard normal at z = (elo - 1200) / 400).
+ * Minimums are rounded UP so everyone inside a tier is strictly within its
+ * named Top % (e.g. every Diamond player is within the Top 0.1%).
  */
 export const TIER_THRESHOLDS: Record<Tier, { min: number; max: number }> = {
-  Iron: { min: 0, max: 600 },
-  Bronze: { min: 600, max: 900 },
-  Silver: { min: 900, max: 1200 },
-  Gold: { min: 1200, max: 1500 },
-  Platinum: { min: 1500, max: 1700 },
-  Emerald: { min: 1700, max: 2000 },
-  Diamond: { min: 2000, max: 2400 },
-  Master: { min: 2400, max: 2600 },
-  Grandmaster: { min: 2600, max: 3000 },
-  Challenger: { min: 3000, max: Infinity },
+  /** Below Top 75% */
+  Iron: { min: 0, max: 931 },
+  /** Top 75% */
+  Bronze: { min: 931, max: 1200 },
+  /** Top 50% (median and above) */
+  Silver: { min: 1200, max: 1470 },
+  /** Top 25% */
+  Gold: { min: 1470, max: 1713 },
+  /** Top 10% */
+  Platinum: { min: 1713, max: 2131 },
+  /** Top 1% */
+  Emerald: { min: 2131, max: 2437 },
+  /** Top 0.1% */
+  Diamond: { min: 2437, max: 2688 },
+  /** Top 0.01% */
+  Master: { min: 2688, max: 2906 },
+  /** Top 0.001% */
+  Grandmaster: { min: 2906, max: 3102 },
+  /** Top 0.0001% */
+  Challenger: { min: 3102, max: Infinity },
 } as const;
 
 /**
