@@ -317,8 +317,8 @@ describe('Cache Data Creation', () => {
 });
 
 describe('Cache TTL Constants', () => {
-  it('should have correct DEFAULT TTL (1 hour)', () => {
-    expect(CACHE_TTL.DEFAULT).toBe(60 * 60);
+  it('should have correct DEFAULT TTL (10 minutes)', () => {
+    expect(CACHE_TTL.DEFAULT).toBe(10 * 60);
   });
 
   it('should have correct CURRENT_YEAR TTL (1 hour)', () => {
