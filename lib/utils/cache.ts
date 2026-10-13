@@ -10,8 +10,8 @@ import type { AggregatedStats } from '../github/types';
  * TTL Constants (in seconds)
  */
 export const CACHE_TTL = {
-  /** Default TTL for rank results (1 hour - max refresh within Vercel Hobby free tier) */
-  DEFAULT: 60 * 60,
+  /** Default TTL for rank results (10 minutes) */
+  DEFAULT: 10 * 60,
   /** TTL for current year stats (1 hour) */
   CURRENT_YEAR: 60 * 60,
   /** TTL for historical years (30 days - effectively permanent) */
