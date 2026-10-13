@@ -1,0 +1,35 @@
+# Refresh rank badge cache every hour
+# Warms Upstash Redis + Vercel edge cache so profile visitors never hit a cold 6s render.
+# GitHub's camo image proxy respects Cache-Control (max-age=600) and refetches on its own —
+# this cron just guarantees fresh data is already cached.
+
+name: Refresh Rank Cache
+
+on:
+  schedule:
+    # Every hour at minute 5 (UTC)
+    - cron: '5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    name: Warm rank cache
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Refresh BaptisteFaisy rank (bypass cache)
+        run: |
+          set -euo pipefail
+          echo "Warming rank cache with force=true..."
+          curl -fsS --max-time 60 \
+            "https://baptiste-ranked.vercel.app/api/rank/BaptisteFaisy?force=true" \
+            -o /dev/null \
+            -w "force refresh: HTTP %{http_code} in %{time_total}s\n"
+
+      - name: Verify cached response
+        run: |
+          set -euo pipefail
+          echo "Checking cached headers..."
+          curl -fsS --max-time 30 -I \
+            "https://baptiste-ranked.vercel.app/api/rank/BaptisteFaisy" \
+            | grep -i -E "^(HTTP|cache-control|x-cache|x-request-id)"
